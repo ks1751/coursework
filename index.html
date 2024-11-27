@@ -211,6 +211,25 @@
             </div>
         </main>
     </div>
+    <script>
+        new Vue({
+            el : '#app',
+            data: {
+                selectedSubject: '',
+                sortAttribute: 'subject',
+                showOrder: 'asc',
+                showCart: false,
+                searchQuery: '',
+                cartItems: [],
+                lessons: [],
+                customerName: '',
+                customerPhone: '',
+                isNameValid: false,
+                isPhoneValid: false,
+                isCheckoutValid: false,
+            }
+        })
+    </script>
 </body>
 </html>
         
