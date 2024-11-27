@@ -236,7 +236,23 @@
             methods: {
                 toggleCart(){
                     this.showCart = !this.showCart;
-                }
+                },
+                addToCart(lesson){
+                    if (lesson.spaces > 0) {
+                        this.cartItems.push({...lesson});
+                        lesson.spaces--;
+                    }
+                },
+                removeFromCart(item){
+                    const index = this.cartItems.indexOf(item);
+                    if (index > -1){
+                        this.cartItems.splice(index,1);
+                        const originalLesson = this.lessons.find(l => l.id == item.id);
+                        if (originalLesson) {
+                            originalLesson.spaces++;
+                        }
+                    }
+                },
             }       
         })
     </script>
