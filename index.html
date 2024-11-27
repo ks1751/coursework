@@ -227,7 +227,17 @@
                 isNameValid: false,
                 isPhoneValid: false,
                 isCheckoutValid: false,
-            }
+            },
+            computed: {
+                cartTotal(){
+                    return this.cartItems.reduce((total, item) => total + item.price, 0);
+                }
+            },
+            methods: {
+                toggleCart(){
+                    this.showCart = !this.showCart;
+                }
+            }       
         })
     </script>
 </body>
