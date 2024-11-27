@@ -361,8 +361,10 @@
                         console.error('Error updating lesson spaces:', error);
                         throw error;
                     }
-                },
-
+                }
+            },
+            created() {
+                this.fetchAllLessons();
             }       
         })
     </script>
