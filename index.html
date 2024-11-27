@@ -237,6 +237,21 @@
                 toggleCart(){
                     this.showCart = !this.showCart;
                 },
+                async fetchAllLessons(){
+                    try {
+                        const response = await fetch('hhtp://localhost:3000/lessons');
+                        if (response.ok){
+                            const lessons = await response.json();
+                            console.log('Fetched lessons:', lessons);
+                            this.lessons = lessons;
+                        } else {
+                            const errorText = await response.text();
+                            console.error('Failed to fetch lessons:', errorText);
+                        }
+                    }catch (error){
+                        console.error('Error fetching lessons:', error);
+                    }
+                },
                 addToCart(lesson){
                     if (lesson.spaces > 0) {
                         this.cartItems.push({...lesson});
