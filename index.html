@@ -303,6 +303,25 @@
                         alert('Error while processing your order. Try again later.');
                     };
                 },
+                async saveOrder(order) {
+                    try{
+                        const response = await fetch(`http://localhost:3000/api/orders`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type' : 'application/json'
+                            },
+                            body: JSON.stringify(order)
+                        }); 
+                        if(!response.ok) {
+                            throw new Error('Failed to save order');
+                        }
+                        return await response.json();
+                    } catch (error) {
+                        console.error('Error saving order:', error);
+                        throw error
+                    }
+                }
+
             }       
         })
     </script>
