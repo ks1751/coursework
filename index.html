@@ -269,6 +269,40 @@
                     !this.isNameValid && !this.isPhoneValid &&
                     this.cartItems.length > 0;
                 },
+                async checkout() {
+                    if (!this.isCheckoutValid) return;
+                    const order = {
+                        name: this.customerName,
+                        phone: this.customerPhone,
+                        lessonId: this.cartItems.map (item => item._id),
+                        spaces: this.cartItems.length,
+                        total: this.cartTotal
+                    };
+                    try {
+                        await this.saveOrder(order);
+
+                        for (const item of this.cartItems) {
+                            const lessonToUpdate = this.lessons.find(l => l._id === item._id);
+                            if(lessonToUpdate){
+                                console.log('Current spaces before update:', lessonToUpdate.spaces);
+                                await this.updateLessonSpaces(
+                                    item._id,
+                                    lessonToUpdate.spaces
+                                );
+                            }
+                        }
+                        await this.fetchAllLessons();
+
+                        alert(`Thank you ${this.customerName}! Your order has be taken successfully.\nTotal: $${this.cartTotal}`);
+                        this.cartItems = [];
+                        this.customerName = '';
+                        this.customerPhone = '';
+                        this.showCart = false;
+                    } catch(error) {
+                        console.error('Error during checkout:', error);
+                        alert('Error while processing your order. Try again later.');
+                    };
+                },
             }       
         })
     </script>
