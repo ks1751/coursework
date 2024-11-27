@@ -335,7 +335,27 @@
                         console.error('Error saving order:', error);
                         throw error
                     }
-                }
+                },
+                async updateLessonSpaces(lessonId, spaces) {
+                    try {
+                        const cleanLessonId = lessonId.toString().replace(/ObjectId\(['"](.+)['"]\)/, "$1");
+                        console.log('Updating lesson with ID:', cleanLessonId);
+                        console.log('New spaces value:', spaces);
+
+                        const response = await fetch(`http://localhost:3000/api/lessons/` + cleanLessonId, {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": 'application/json'
+                            },
+                            body: JSON.stringify({spaces: parseInt(spaces)})
+                        });
+                        if(!response.ok) {
+                            const errorText = await response.text();
+                            console.error('Server response:', errorText);
+                            throw new Error('Failed to update lesson spaces');
+                        }
+                    }
+                },
 
             }       
         })
