@@ -44,11 +44,27 @@ client
     .catch((err) => console.error('MongoDB Connection Error:', err)
 );
 
-app.get('/lessons', async (req, res) => {
+app.get('/api/lessons', async (req, res) => {
     try {
       const lessons = await db.collection('Lessons').find().toArray();
       res.json(lessons);
     } catch (err) {
       res.status(500).json({ error: 'Failed to fetch lessons' });
     }
-  });
+});
+
+app.post('/api/orders', async (req, res) => {
+    try {
+        const orderData = {
+            customerName: req.body.name,
+            contactNumber: req.body.phoneNumber,
+            lessons: req.body.lessonIds.map(lessonId => new ObjectId(id)),
+            Spaces: req.body.spaces,
+        };
+
+        const dbResult = await db.collection('Orders').insertOne(orderData);
+        res.status(201).json({ ...orderData, _id: dbResult.insertedId });
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
