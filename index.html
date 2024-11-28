@@ -239,7 +239,7 @@
                 },
                 async fetchAllLessons(){
                     try {
-                        const response = await fetch('hhtp://localhost:3000/lessons');
+                        const response = await fetch('http://localhost:3000/lessons');
                         if (response.ok){
                             const lessons = await response.json();
                             console.log('Fetched lessons:', lessons);
