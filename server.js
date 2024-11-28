@@ -29,5 +29,26 @@ app.use((req, res, next) => {
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html')); // Ensure your HTML file is named `index.html` and is in the same directory
-  });
+});
 
+const uri = "mongodb+srv://ks1751:Olaoluwa88@cluster0.kyiza.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"; // Replace with your MongoDB Atlas URI
+const client = new MongoClient(uri);
+let db;
+  
+client
+    .connect()
+    .then(() => {
+      db = client.db('Database1');
+      console.log('Connected to MongoDB Atlas');
+    })
+    .catch((err) => console.error('MongoDB Connection Error:', err)
+);
+
+app.get('/lessons', async (req, res) => {
+    try {
+      const lessons = await db.collection('Lessons').find().toArray();
+      res.json(lessons);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to fetch lessons' });
+    }
+  });
