@@ -68,3 +68,26 @@ app.post('/api/orders', async (req, res) => {
         res.status(400).json({ message: err.message });
     }
 });
+
+app.put('/api/lessons/:id', async (req, res) => {
+    try {
+        const lessonId = req.params.id;
+        if (!ObjectId.isValid(lessonId)) {
+            return res.status(400).json({ message: "Invalid ID format" });
+        }
+        const result = await db.collection('Lessons').updateOne(
+            { _id: new ObjectId(lessonId) },
+            { $set: req.body }
+        );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: "Lesson not found" });
+        }
+        const updatedLesson = await db.collection('Lessons').findOne(
+            { _id: new ObjectId(lessonId) }
+        );
+
+        res.status(200).json(updatedLesson);
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+});
