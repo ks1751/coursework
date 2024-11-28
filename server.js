@@ -27,3 +27,7 @@ app.use((req, res, next) => {
     next(); // Move to the next middleware
 });
 
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html')); // Ensure your HTML file is named `index.html` and is in the same directory
+  });
+
