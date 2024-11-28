@@ -44,7 +44,7 @@ client
     .catch((err) => console.error('MongoDB Connection Error:', err)
 );
 
-app.get('/api/lessons', async (req, res) => {
+app.get('/lessons', async (req, res) => {
     try {
       const lessons = await db.collection('Lessons').find().toArray();
       res.json(lessons);
