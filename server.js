@@ -91,3 +91,7 @@ app.put('/api/lessons/:id', async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 });
+
+app.listen(PORT, () =>{
+    console.log(`Server is running on http:localhost:${PORT}`);
+});
