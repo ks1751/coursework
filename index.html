@@ -18,7 +18,7 @@
                         @click="toggleCart"
                         :disabled="cartItems.length === 0"
                         class="bg-white text-red-900 px-4 py-2 rounded disabled:bg-gray-300 disabled:cursor-not-allowed">
-                        {{showCart ? 'Lessons' : 'Cart'}}
+                        {{showCart ? ' Back To Lessons' : 'Cart'}}
                     </button>
                 </div>
             </div>
@@ -74,7 +74,8 @@
                         </label>
                         <input 
                             type="text" 
-                            v-model="searchQuery" 
+                            v-model="searchQuery"
+                            @input="searchLessons" 
                             placeholder="Search by any term..."
                             class="border rounded p-2 w-full"
                         >
@@ -92,7 +93,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div 
-                        v-for="lesson in sortedLessons"
+                        v-for="lesson in sortedLessons" :key = 'lesson._id'
                         class="bg-white rounded-lg shadow-md overflow-hidden">
                         <img :src="lesson.image" alt="Lesson Image" class="w-full h-48 object-cover">
                         <div class="p-4">
@@ -120,8 +121,10 @@
                             <button 
                                 @click="addToCart(lesson)"
                                 :disabled="lesson.spaces === 0"
-                                class="mt-4 w-full bg-red-900 text-white px-4 py-2 rounded disabled:bg-white-400  text-black px-4 py-2 disabled:cursor-not-allowed">
-                                {{lesson.spaces === 0 ? 'Sold Out' : 'Add to Cart'}}
+                                class="[
+                                'mt-4 w-full px-4 py-2 rounded', bg-red-900 text-white
+                                lesson.spaces === 0 ? 'bg-red-900 text-white' : 'bg-gray-400 text-black cursor-not-allowed']">                        
+                            {{lesson.spaces === 0 ? 'Sold Out' : 'Add to Cart'}}
                             </button>
                         </div>
                     </div>
@@ -170,10 +173,10 @@
                                     v-model="customerName"
                                     @input="validateName"
                                     class="border rounded p-2 w-full"
-                                    :class="{'border-red-500': nameError}"
+                                    :class="{'border-red-500': isNameValid}"
                                     placeholder="Enter your name"
                                 >
-                                <p v-if="nameError" class="text-red-500 text-sm mt-1">
+                                <p v-if="isNameValid" class="text-red-500 text-sm mt-1">
                                     Name must contain letters only
                                 </p>
                             </div>
@@ -186,10 +189,10 @@
                                     v-model="customerPhone"
                                     @input="validatePhone"
                                     class="border rounded p-2 w-full"
-                                    :class="{'border-red-500': phoneError}"
+                                    :class="{'border-red-500': isPhoneValid}"
                                     placeholder="Enter your phone number"
                                 >
-                                <p v-if="phoneError" class="text-red-500 text-sm mt-1">
+                                <p v-if="isPhoneValid" class="text-red-500 text-sm mt-1">
                                     Phone must contain numbers only
                                 </p>
                             </div>
@@ -220,6 +223,7 @@
                 sortOrder: 'asc',
                 showCart: false,
                 searchQuery: '',
+                searchTimer: null,
                 cartItems: [],
                 lessons: [],
                 customerName: '',
@@ -233,13 +237,23 @@
                     return this.cartItems.reduce((total, item) => total + item.price, 0);
                 },
                 sortedLessons() {
-                    let sorted = this.lessons.sort((a, b) => {
-                        let propA = a[this.sortAttribute].toString().toLowerCase();
-                        let propB = b[this.sortAttribute].toString().toLowerCase();
-                        if (propA < propB) return this.sortOrder === 'asc' ? -1 : 1;
-                        if (propA > propB) return this.sortOrder === 'asc' ? 1 : -1;
-                        return 0;
-                    });
+                    let filteredLessons = [...this.lessons];
+                    if (this.sortAttribute) {
+                        filteredLessons.sort((a, b) => {
+                            let comparison = 0;
+                            if (['subject', 'location'].includes(this.sortAttribute)) {
+                                const aValue = a[this.sortAttribute]?.toString().toLowerCase() || '';
+                                const bValue = b[this.sortAttribute]?.toString().toLowerCase() || '';
+                                comparison = aValue.localeCompare(bValue);
+                            } else if (['price', 'spaces'].includes(this.sortAttribute)) {
+                                const aValue = Number(a[this.sortAttribute]) || 0;
+                                const bValue = Number(b[this.sortAttribute]) || 0;
+                                comparison = aValue - bValue;
+                            }
+                            return this.sortOrder === 'asc' ? comparison : -comparison;
+                        });
+                    }
+                    return filteredLessons;
                 }
             },
             methods: {
@@ -261,6 +275,24 @@
                         console.error('Error fetching lessons:', error);
                     }
                 },
+                async searchLessons() {
+                    if (this.searchQuery.length > 0) {
+                        try {
+                            const response = await fetch(`/search?q=${this.searchQuery}`);
+                            const data = await response.json();
+                            this.lessons = data; 
+                        } catch (error) {
+                            console.error('Error during search request:', error);
+                        }
+                    } else {
+                        this.lessons = []; 
+                    }
+                },
+                quickSearch(){
+                    clearTimeout(this.searchTimer);
+                    this.searchTimer = setTimeout(() => {
+                        this.searchLessons}, 500)
+                },
                 addToCart(lesson){
                     if (lesson.spaces > 0) {
                         this.cartItems.push({...lesson});
@@ -278,7 +310,7 @@
                     }
                 },
                 validateName(){
-                    const nameRegex = /^[A-Za-a\s]+$/;
+                    const nameRegex = /^[A-Za-z\s]+$/;
                     this.isNameValid = !nameRegex.test(this.customerName);
                     this.updateValidCheckout();
                 },

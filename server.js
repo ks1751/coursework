@@ -55,15 +55,15 @@ app.get('/lessons', async (req, res) => {
 
 app.post('/api/orders', async (req, res) => {
     try {
-        const orderData = {
+        const order= {
             customerName: req.body.name,
             contactNumber: req.body.phoneNumber,
-            lessons: req.body.lessonIds.map(lessonId => new ObjectId(id)),
+            lessonsIds: req.body.lessonId.map(id => new ObjectId(id)),
             Spaces: req.body.spaces,
         };
 
-        const dbResult = await db.collection('Orders').insertOne(orderData);
-        res.status(201).json({ ...orderData, _id: dbResult.insertedId });
+        const dbResult = await db.collection('Orders').insertOne(order);
+        res.status(201).json({ ...order, _id: dbResult.insertedId });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }
@@ -89,6 +89,26 @@ app.put('/api/lessons/:id', async (req, res) => {
         res.status(200).json(updatedLesson);
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+});
+
+app.get('/search', async (req, res) => {
+    try {
+        const query = req.query.q?.toLowerCase();  // Get the search query from the URL parameter
+        
+        if (!query) {
+            return res.status(400).json({ message: "Search query is required." });
+        }
+
+        // Search lessons based on the query
+        const lessons = await db.collection('Lessons').find({ 
+            $or: [
+            {subject: { $regex: query, $options: 'i' }}, {location: { $regex: query, $options: 'i'}} ]
+            }).toArray();
+        res.json(lessons);
+    } catch (error) {
+        console.error('Error during search:', error);
+        res.status(500).json({ message: 'Error fetching lessons from the database' });
     }
 });
 
